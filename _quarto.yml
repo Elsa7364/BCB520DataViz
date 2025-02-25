@@ -5,16 +5,21 @@ project:
 website:
   title: "BCB520_DataViz"
   navbar:
+    left:
+      - text: "Home"
+        href: index.qmd
+      - text: "Assignment 1"
+        href: assignment1.qmd
+      - text: "Assignment 2"
+        href: assignment2.qmd
     right:
       - about.qmd
       - icon: github
-        href: https://github.com/
-      - icon: twitter
-        href: https://twitter.com
+        href: https://github.com/Elsa7364/BCB520DataViz
+
 format:
   html:
     theme: cosmo
     css: styles.css
 
 editor: visual
-
