@@ -1,0 +1,85 @@
+---
+title: "BCB 520 Assignment 3"
+format: html
+editor: visual
+---
+
+**Assignment: Data Visualization using Reddit Hyperlink Network**
+
+For this assignment, I’m creating a data visualization using the **Reddit Hyperlink Network dataset** from **Stanford’s SNAP** ([source](https://snap.stanford.edu/data/soc-RedditHyperlinks.html)). This dataset tracks how different subreddits are connected through hyperlinks—basically, when one subreddit links to another in a post.
+
+I picked the second dataset to analyze subreddit interactions based on title mentions rather than mentions in in posts for simplicity. I'm using **Social Network Analysis (SNA)** to explore how communities interact and connect on Reddit. The goal is to visualize these relationships and see patterns in how subreddits reference each other!
+
+```{r}
+library(readr)
+
+file_path <- "soc-redditHyperlinks-title.tsv"
+
+# using read_tsv to read the data without needing to decompress it
+reddit_data <- read_tsv(file_path, comment = "#")
+
+head(reddit_data)
+
+```
+
+To understand this, we’ll **turn the data into a network (graph)** where:\
+- **Each subreddit is a dot (node).**\
+- **A line (edge) connects two dots if one subreddit links to another.**
+
+To see how different communities are connected and which ones are the most linked or influential.
+
+-   **SOURCE_SUBREDDIT** is where the link starts (the subreddit that posted the link).\
+-   **TARGET_SUBREDDIT** is where the link goes (the subreddit being linked to).
+
+```{r}
+library(igraph)
+
+edges <- reddit_data[, c("SOURCE_SUBREDDIT", "TARGET_SUBREDDIT")]
+
+reddit_graph <- graph_from_data_frame(edges, directed = TRUE)
+
+summary(reddit_graph)
+```
+
+This tells us: - The network consists of **54,075 subreddits**. - There are **571,927 hyperlinks** connecting them. - The graph is **directed**, meaning links have a source and a destination.
+
+# Finding the most refrenced subreddits (in-degree centrality)
+
+```{r}
+top_influential <- sort(degree(reddit_graph, mode = "in"), decreasing = TRUE)[1:10]
+cat("Top 10 Most Linked Subreddits (In-Degree Centrality):\n")
+print(top_influential)
+
+```
+
+# Finding the most active subreddits (out-degree centrailty)
+
+```{r}
+top_outbound <- sort(degree(reddit_graph, mode = "out"), decreasing = TRUE)[1:10]
+cat("Top 10 Subreddits That Link the Most (Out-Degree Centrality):\n")
+print(top_outbound)
+
+```
+
+# Creating a network of the most refrenced subreddits
+
+```{r}
+# Get the top 50 most linked subreddits by in-degree
+top_50 <- names(sort(degree(reddit_graph, mode = "in"), decreasing = TRUE))[1:50]
+
+# Create a subgraph with only those subreddits
+subreddit_subgraph <- induced_subgraph(reddit_graph, vids = top_50)
+
+# Convert to tidygraph for visualization
+library(ggraph)
+library(tidygraph)
+
+set.seed(42)
+ggraph(as_tbl_graph(subreddit_subgraph), layout = "kk") + 
+  geom_edge_link(aes(alpha = 0.5), color = "gray") +
+  geom_node_point(size = 5, aes(color = degree(subreddit_subgraph, mode = "in"))) +
+  geom_node_text(aes(label = name), repel = TRUE, size = 4) +
+  theme_void() +
+  ggtitle("Top 50 Most Linked Subreddits")
+
+```

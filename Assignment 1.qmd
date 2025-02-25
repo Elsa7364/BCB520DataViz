@@ -1,0 +1,88 @@
+---
+title: "Anscombe's Quartet Visualization"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    html-math-method: katex
+    code-copy: true
+---
+For this assignment, I’m doing a visualization with Anscombe’s Quartet—a very interesting dataset that shows how important it is to actually *see* our data, not just look at the stats. It is named after Frank Anscombe, t he one who designed the dataset in 1973 to teach this lesson. 
+
+The dataset consists of four groups of $x$ and $y$ values that share almost identical summary statistics (mean, variance, and correlation) but look so different when plotted. I’ll create two visualizations, one straightforward and coded by hand, and another with a little help from AI to make it more playful and polished.
+
+# 1. Loading the R packages needed and tidying up the dataset,
+```{r, message=FALSE, warning=FALSE}
+library("tidyverse", "broom", "knitr")
+
+data(anscombe)
+
+anscombe_tidy <- anscombe %>%
+  pivot_longer(cols = everything(),
+               names_to = c(".value", "set"),
+               names_pattern = "(.)(.)") %>%
+  mutate(set = as.numeric(set))
+
+view(anscombe_tidy)
+```
+# 2. Getting the summary stats, and we can see they are almost identical!
+```{r}
+summary_stats <- anscombe_tidy %>%
+  group_by(set) %>%
+  summarize(
+    mean_x = mean(x),
+    mean_y = mean(y),
+    var_x = var(x),
+    var_y = var(y),
+    correlation = cor(x, y)
+  )
+
+print(summary_stats)
+```
+# 3. A plot to bring the data to life,
+```{r, message=FALSE, warning=FALSE}
+ggplot(anscombe_tidy, aes(x = x, y = y)) +
+  geom_point(color = "blue", size = 3) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  facet_wrap(~set, ncol = 2) +
+  labs(
+    title = "Anscombe's Quartet",
+    x = "X Values",
+    y = "Y Values"
+  ) +
+  theme_minimal()
+
+```
+## A nicer cuter one,
+
+```{r, warning=FALSE, message=FALSE}
+ggplot(anscombe_tidy, aes(x = x, y = y)) +
+  geom_point(aes(color = "Data Points"), size = 4, alpha = 0.8, shape = 21, fill = "#80CBC4") +
+  geom_smooth(aes(color = "Trend Line"), method = "lm", se = FALSE, size = 1.2, linetype = "dashed") +
+  facet_wrap(~set, ncol = 2) +
+  scale_color_manual(
+    values = c("Data Points" = "#4DB6AC", "Trend Line" = "#E57373"),
+    name = NULL
+  ) +
+  labs(
+    title = "Anscombe's Quartet",
+    subtitle = "Identical statistical summaries, visually distinct datasets. Like whaaat! :o",
+    x = "X Values",
+    y = "Y Values",
+    caption = "Data Source: Anscombe (1973)"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 18, hjust = 0.5, color = "#37474F"),
+    plot.subtitle = element_text(size = 14, hjust = 0.5, color = "#546E7A"),
+    strip.text = element_text(face = "bold", color = "#FF7043"),
+    axis.title = element_text(face = "bold", color = "#37474F"),
+    panel.grid.major = element_line(color = "#CFD8DC"),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "#F9FBE7", color = NA),
+    legend.position = "top",
+    legend.justification = "center",
+    legend.box.spacing = unit(0.2, "cm")
+  )
+
+```
