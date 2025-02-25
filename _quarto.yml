@@ -3,15 +3,11 @@ project:
   output-dir: docs
 
 website:
-  title: "BCB520_DataViz"
+  title: "BCB520 Portfolio"
   navbar:
     left:
       - text: "Home"
         href: index.qmd
-      - text: "Assignment 1"
-        href: Assignment_1.qmd
-      - text: "Assignment 2"
-        href: Assignment_2.qmd
     right:
       - about.qmd
       - icon: github

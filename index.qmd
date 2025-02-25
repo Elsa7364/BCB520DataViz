@@ -1,5 +1,6 @@
 ---
-title: "BCB520_DataViz"
+title: "BCB520 Portfolio"
+author: "Marwa Elsayed"
 listing:
   contents: posts
   sort: "date desc"
@@ -10,3 +11,7 @@ listing:
 page-layout: full
 title-block-banner: true
 ---
+
+# Welcome to My BCB520 Portfolio!
+
+This is my learning journey through BCB520! I'll be posting my assignments and exploring **data visualization** along the way. By the end of the semester, I hope this turns into a **cool portfolio** showcasing my progress.
