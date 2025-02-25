@@ -9,13 +9,13 @@ website:
       - text: "Home"
         href: index.qmd
       - text: "Assignment 1"
-        href: assignment1.qmd
+        href: Assignment_1.qmd
       - text: "Assignment 2"
-        href: assignment2.qmd
+        href: Assignment_2.qmd
     right:
       - about.qmd
       - icon: github
-        href: https://github.com/Elsa7364/BCB520DataViz
+        href: https://github.com/Elsa7364
 
 format:
   html:
