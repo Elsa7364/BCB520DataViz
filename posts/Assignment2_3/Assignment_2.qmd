@@ -1,10 +1,8 @@
 ---
-title: "BCB 520 Assignment 2 & 3"
+title: "Data Visualization using Reddit Hyperlink Network"
 format: html
 editor: visual
 ---
-
-**Assignment: Data Visualization using Reddit Hyperlink Network**
 
 For this assignment, I’m creating a data visualization using the **Reddit Hyperlink Network dataset** from **Stanford’s SNAP** ([source](https://snap.stanford.edu/data/soc-RedditHyperlinks.html)). This dataset tracks how different subreddits are connected through hyperlinks—basically, when one subreddit links to another in a post.
 

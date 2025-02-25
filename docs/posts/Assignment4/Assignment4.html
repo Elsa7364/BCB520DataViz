@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>BCB 520 Assignment 2 &amp; 3 – BCB520 Portfolio</title>
+<title>Subreddit Wars – BCB520 Portfolio</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,40 +19,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -105,7 +71,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link rel="stylesheet" href="../../styles.css">
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top quarto-banner">
@@ -130,7 +96,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
     <a class="nav-link" href="../../about.html"> 
-<span class="menu-text">BCB520 Portfolio</span></a>
+<span class="menu-text">About Me</span></a>
   </li>  
   <li class="nav-item compact">
     <a class="nav-link" href="https://github.com/Elsa7364"> <i class="bi bi-github" role="img">
@@ -148,7 +114,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">BCB 520 Assignment 2 &amp; 3</h1>
+      <h1 class="title">Subreddit Wars</h1>
+            <p class="subtitle lead">Marks and Channels</p>
                       </div>
   </div>
     
@@ -164,7 +131,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
+    </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content">
 
@@ -172,172 +141,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<p><strong>Assignment: Data Visualization using Reddit Hyperlink Network</strong></p>
-<p>For this assignment, I’m creating a data visualization using the <strong>Reddit Hyperlink Network dataset</strong> from <strong>Stanford’s SNAP</strong> (<a href="https://snap.stanford.edu/data/soc-RedditHyperlinks.html">source</a>). This dataset tracks how different subreddits are connected through hyperlinks—basically, when one subreddit links to another in a post.</p>
-<p>I picked the second dataset to analyze subreddit interactions based on title mentions rather than mentions in in posts for simplicity. I’m using <strong>Social Network Analysis (SNA)</strong> to explore how communities interact and connect on Reddit. The goal is to visualize these relationships and see patterns in how subreddits reference each other!</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>file_path <span class="ot">&lt;-</span> <span class="st">"C:/Github repos/soc-redditHyperlinks-title.tsv"</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># using read_tsv to read the data without needing to decompress it</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>reddit_data <span class="ot">&lt;-</span> <span class="fu">read_tsv</span>(file_path, <span class="at">comment =</span> <span class="st">"#"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Rows: 571927 Columns: 6
-── Column specification ────────────────────────────────────────────────────────
-Delimiter: "\t"
-chr  (4): SOURCE_SUBREDDIT, TARGET_SUBREDDIT, POST_ID, PROPERTIES
-dbl  (1): LINK_SENTIMENT
-dttm (1): TIMESTAMP
-
-ℹ Use `spec()` to retrieve the full column specification for this data.
-ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(reddit_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 6
-  SOURCE_SUBREDDIT  TARGET_SUBREDDIT POST_ID TIMESTAMP           LINK_SENTIMENT
-  &lt;chr&gt;             &lt;chr&gt;            &lt;chr&gt;   &lt;dttm&gt;                       &lt;dbl&gt;
-1 rddtgaming        rddtrust         1u4pzzs 2013-12-31 16:39:18              1
-2 xboxone           battlefield_4    1u4tmfs 2013-12-31 17:59:11              1
-3 ps4               battlefield_4    1u4tmos 2013-12-31 17:59:40              1
-4 fitnesscirclejerk leangains        1u50xfs 2013-12-31 19:01:56              1
-5 fitnesscirclejerk lifeprotips      1u51nps 2013-12-31 21:02:28              1
-6 cancer            fuckcancer       1u5216s 2013-12-31 18:59:26              1
-# ℹ 1 more variable: PROPERTIES &lt;chr&gt;</code></pre>
-</div>
-</div>
-<p>To understand this, we’ll <strong>turn the data into a network (graph)</strong> where:<br>
-- <strong>Each subreddit is a dot (node).</strong><br>
-- <strong>A line (edge) connects two dots if one subreddit links to another.</strong></p>
-<p>To see how different communities are connected and which ones are the most linked or influential.</p>
-<ul>
-<li><strong>SOURCE_SUBREDDIT</strong> is where the link starts (the subreddit that posted the link).<br>
-</li>
-<li><strong>TARGET_SUBREDDIT</strong> is where the link goes (the subreddit being linked to).</li>
-</ul>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(igraph)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'igraph' was built under R version 4.4.2</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>
-Attaching package: 'igraph'</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following objects are masked from 'package:stats':
-
-    decompose, spectrum</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:base':
-
-    union</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>edges <span class="ot">&lt;-</span> reddit_data[, <span class="fu">c</span>(<span class="st">"SOURCE_SUBREDDIT"</span>, <span class="st">"TARGET_SUBREDDIT"</span>)]</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>reddit_graph <span class="ot">&lt;-</span> <span class="fu">graph_from_data_frame</span>(edges, <span class="at">directed =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(reddit_graph)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>IGRAPH f6897fd DN-- 54075 571927 -- 
-+ attr: name (v/c)</code></pre>
-</div>
-</div>
-<p>This tells us: - The network consists of <strong>54,075 subreddits</strong>. - There are <strong>571,927 hyperlinks</strong> connecting them. - The graph is <strong>directed</strong>, meaning links have a source and a destination.</p>
-<section id="finding-the-most-refrenced-subreddits-in-degree-centrality" class="level1">
-<h1>Finding the most refrenced subreddits (in-degree centrality)</h1>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>top_influential <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">degree</span>(reddit_graph, <span class="at">mode =</span> <span class="st">"in"</span>), <span class="at">decreasing =</span> <span class="cn">TRUE</span>)[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Top 10 Most Linked Subreddits (In-Degree Centrality):</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Top 10 Most Linked Subreddits (In-Degree Centrality):</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(top_influential)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>    askreddit          pics          iama todayilearned         funny 
-        19293          9799          9752          8753          8731 
-    worldnews        videos          news      politics        gaming 
-         7687          7567          5928          4860          4695 </code></pre>
-</div>
-</div>
-</section>
-<section id="finding-the-most-active-subreddits-out-degree-centrailty" class="level1">
-<h1>Finding the most active subreddits (out-degree centrailty)</h1>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>top_outbound <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">degree</span>(reddit_graph, <span class="at">mode =</span> <span class="st">"out"</span>), <span class="at">decreasing =</span> <span class="cn">TRUE</span>)[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Top 10 Subreddits That Link the Most (Out-Degree Centrality):</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Top 10 Subreddits That Link the Most (Out-Degree Centrality):</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(top_outbound)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>  subredditdrama           bestof        titlegore   shitredditsays 
-           22971            21170             9500             7338 
-        shitpost     circlebroke2       switcharoo shitamericanssay 
-            6657             6037             5997             5482 
-           drama  shitstatistssay 
-            5478             4240 </code></pre>
-</div>
-</div>
-</section>
-<section id="creating-a-network-of-the-most-refrenced-subreddits" class="level1">
-<h1>Creating a network of the most refrenced subreddits</h1>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the top 50 most linked subreddits by in-degree</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>top_50 <span class="ot">&lt;-</span> <span class="fu">names</span>(<span class="fu">sort</span>(<span class="fu">degree</span>(reddit_graph, <span class="at">mode =</span> <span class="st">"in"</span>), <span class="at">decreasing =</span> <span class="cn">TRUE</span>))[<span class="dv">1</span><span class="sc">:</span><span class="dv">50</span>]</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a subgraph with only those subreddits</span></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>subreddit_subgraph <span class="ot">&lt;-</span> <span class="fu">induced_subgraph</span>(reddit_graph, <span class="at">vids =</span> top_50)</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to tidygraph for visualization</span></span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggraph)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'ggraph' was built under R version 4.4.2</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Loading required package: ggplot2</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'ggplot2' was built under R version 4.4.2</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidygraph)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'tidygraph' was built under R version 4.4.2</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>
-Attaching package: 'tidygraph'</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:igraph':
-
-    groups</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:stats':
-
-    filter</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggraph</span>(<span class="fu">as_tbl_graph</span>(subreddit_subgraph), <span class="at">layout =</span> <span class="st">"kk"</span>) <span class="sc">+</span> </span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_edge_link</span>(<span class="fu">aes</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>), <span class="at">color =</span> <span class="st">"gray"</span>) <span class="sc">+</span></span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_node_point</span>(<span class="at">size =</span> <span class="dv">5</span>, <span class="fu">aes</span>(<span class="at">color =</span> <span class="fu">degree</span>(subreddit_subgraph, <span class="at">mode =</span> <span class="st">"in"</span>))) <span class="sc">+</span></span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_node_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> name), <span class="at">repel =</span> <span class="cn">TRUE</span>, <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Top 50 Most Linked Subreddits"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="Assignment_2_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
+<p>In this assignment, I explore how different ways of visualizing data can impact how we understand it. Using the <strong>Reddit Hyperlink Network dataset</strong> from my previous assignment, I create a series of visualizations to show visualization principles, including <strong>expressiveness, effectiveness, discriminability, separability, and popout</strong>.</p>
+<p>The goal is to show how good design choices make data clearer and easier to interpret, while bad choices can make it confusing or misleading. So, when comparing well designed and poorly designed versions of the same data, I learn what works and what doesn’t in data visualization.</p>
 
 
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

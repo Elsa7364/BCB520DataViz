@@ -1,8 +1,8 @@
 ---
-title: "BCB520 Portfolio"
+title: "About Me"
 image: profile.jpg
 about:
-  template: jolla
+  template: solana
   links:
     - icon: linkedin
       text: LinkedIn
@@ -10,7 +10,15 @@ about:
     - icon: github
       text: Github
       href: https://github.com/Elsa7364
+    - icon: envelope
+      text: Email
+      href: elsa7364@vandals.uidaho.edu
 ---
 
+I'm Marwa Elsayed, a Ph.D. student in Political Science at the University of Idaho, with a background in Public Administration and Tour Guidance. My research focuses on policy analysis, water governance, and data-driven decision-making. I'm especially into data visualization, political research methods, and using computational tools for public policy.
+
+Outside of academia, I love lifting, climbing, and electronic music.
+
 ## About this Portfolio
-This is my BCB520 class portfolio where I track my assignments and progress.
+
+This is my BCB 520 Foundations of Data Visualization class portfolio where I track my assignments and progress.

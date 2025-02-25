@@ -1,0 +1,14 @@
+---
+title: "Subreddit Wars"
+subtitle: "Marks and Channels"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    html-math-method: katex
+    code-copy: true
+---
+In this assignment, I explore how different ways of visualizing data can impact how we understand it. Using the **Reddit Hyperlink Network dataset** from my previous assignment, I create a series of visualizations to show visualization principles, including **expressiveness, effectiveness, discriminability, separability, and popout**.  
+
+The goal is to show how good design choices make data clearer and easier to interpret, while bad choices can make it confusing or misleading. So, when comparing well designed and poorly designed versions of the same data, I learn what works and what doesn’t in data visualization.
+
