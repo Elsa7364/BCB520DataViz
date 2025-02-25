@@ -7,11 +7,13 @@ format:
     html-math-method: katex
     code-copy: true
 ---
-For this assignment, I’m doing a visualization with Anscombe’s Quartet—a very interesting dataset that shows how important it is to actually *see* our data, not just look at the stats. It is named after Frank Anscombe, t he one who designed the dataset in 1973 to teach this lesson. 
+
+For this assignment, I’m doing a visualization with Anscombe’s Quartet—a very interesting dataset that shows how important it is to actually *see* our data, not just look at the stats. It is named after Frank Anscombe, t he one who designed the dataset in 1973 to teach this lesson.
 
 The dataset consists of four groups of $x$ and $y$ values that share almost identical summary statistics (mean, variance, and correlation) but look so different when plotted. I’ll create two visualizations, one straightforward and coded by hand, and another with a little help from AI to make it more playful and polished.
 
 # 1. Loading the R packages needed and tidying up the dataset,
+
 ```{r, message=FALSE, warning=FALSE}
 library("tidyverse", "broom", "knitr")
 
@@ -25,7 +27,9 @@ anscombe_tidy <- anscombe %>%
 
 view(anscombe_tidy)
 ```
+
 # 2. Getting the summary stats, and we can see they are almost identical!
+
 ```{r}
 summary_stats <- anscombe_tidy %>%
   group_by(set) %>%
@@ -39,7 +43,9 @@ summary_stats <- anscombe_tidy %>%
 
 print(summary_stats)
 ```
+
 # 3. A plot to bring the data to life,
+
 ```{r, message=FALSE, warning=FALSE}
 ggplot(anscombe_tidy, aes(x = x, y = y)) +
   geom_point(color = "blue", size = 3) +
@@ -53,6 +59,7 @@ ggplot(anscombe_tidy, aes(x = x, y = y)) +
   theme_minimal()
 
 ```
+
 ## A nicer cuter one,
 
 ```{r, warning=FALSE, message=FALSE}

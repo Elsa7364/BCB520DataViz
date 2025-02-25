@@ -1,5 +1,5 @@
 ---
-title: "BCB 520 Assignment 3"
+title: "BCB 520 Assignment 2 & 3"
 format: html
 editor: visual
 ---
@@ -13,7 +13,7 @@ I picked the second dataset to analyze subreddit interactions based on title men
 ```{r}
 library(readr)
 
-file_path <- "soc-redditHyperlinks-title.tsv"
+file_path <- "C:/Github repos/soc-redditHyperlinks-title.tsv"
 
 # using read_tsv to read the data without needing to decompress it
 reddit_data <- read_tsv(file_path, comment = "#")
