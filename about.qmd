@@ -2,7 +2,7 @@
 title: "About Me"
 image: profile.jpg
 about:
-  template: cayman
+  template: jolla
   links:
     - icon: linkedin
       text: LinkedIn
@@ -10,9 +10,6 @@ about:
     - icon: github
       text: Github
       href: https://github.com/Elsa7364
-    - icon: file-text
-      text: Resume
-      href: "./docs/Elsayed_Resume.pdf"
     - icon: envelope
       text: Email
       href: "mailto:elsa7364@vandals.uidaho.edu"
