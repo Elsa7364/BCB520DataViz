@@ -12,3 +12,38 @@ In this assignment, I explore how different ways of visualizing data can impact 
 
 The goal is to show how good design choices make data clearer and easier to interpret, while bad choices can make it confusing or misleading. So, when comparing well designed and poorly designed versions of the same data, I learn what works and what doesn’t in data visualization.
 
+```{r}
+library(readr)
+
+file_path <- "C:/Github repos/soc-redditHyperlinks-title.tsv"
+
+reddit_data <- read_tsv(file_path, comment = "#")
+
+head(reddit_data)
+```
+# Expressiveness and Effectiveness
+## Figure 1:
+I’m making a heatmap to show how subreddits are connected because it helps us easily see their relationships and spot patterns using colors and organization.
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Select top 20 most frequent subreddit interactions
+heatmap_data <- reddit_data %>%
+  count(SOURCE_SUBREDDIT, TARGET_SUBREDDIT, name = "weight") %>%
+  top_n(10, wt = weight)
+
+# heatmap
+ggplot(heatmap_data, aes(x = SOURCE_SUBREDDIT, y = TARGET_SUBREDDIT, fill = weight)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "lightblue", high = "darkred") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Top 10 Subreddit Interactions", 
+       x = "Source Subreddit", 
+       y = "Target Subreddit", 
+       fill = "Link Count")
+
+```
+
+
