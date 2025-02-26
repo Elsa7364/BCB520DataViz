@@ -2,7 +2,7 @@
 title: "About Me"
 image: profile.jpg
 about:
-  template: solana
+  template: cayman
   links:
     - icon: linkedin
       text: LinkedIn
