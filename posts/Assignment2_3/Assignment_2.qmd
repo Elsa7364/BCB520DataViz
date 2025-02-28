@@ -1,7 +1,18 @@
 ---
 title: "Data Visualization using Reddit Hyperlink Network"
-format: html
-editor: visual
+subtitle: "Assignment 2 & 3"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    html-math-method: katex
+    code-copy: true
+    code-fold: true
+    code-tools: true
+execute:
+  warning: false
+  message: false
+  error: false
 ---
 
 For this assignment, I’m creating a data visualization using the **Reddit Hyperlink Network dataset** from **Stanford’s SNAP** ([source](https://snap.stanford.edu/data/soc-RedditHyperlinks.html)). This dataset tracks how different subreddits are connected through hyperlinks—basically, when one subreddit links to another in a post.

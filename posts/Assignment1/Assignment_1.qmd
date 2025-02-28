@@ -1,11 +1,18 @@
 ---
 title: "Anscombe's Quartet Visualization"
+subtitle: "Assignment 1"
 format:
   html:
     toc: true
     toc-depth: 2
     html-math-method: katex
     code-copy: true
+    code-fold: true
+    code-tools: true
+execute:
+  warning: false
+  message: false
+  error: false
 ---
 
 For this assignment, I’m doing a visualization with Anscombe’s Quartet—a very interesting dataset that shows how important it is to actually *see* our data, not just look at the stats. It is named after Frank Anscombe, t he one who designed the dataset in 1973 to teach this lesson.
