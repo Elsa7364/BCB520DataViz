@@ -87,7 +87,7 @@ Here the color scheme white to yellow makes it hard to differentiate values, and
 ```{r}
 library(ggridges)
 
-# Select top subreddits with the most links
+# top subreddits with the most links
 top_subreddits <- reddit_data %>%
   count(SOURCE_SUBREDDIT, sort = TRUE) %>%
   top_n(10, n) %>%
@@ -96,19 +96,19 @@ top_subreddits <- reddit_data %>%
 reddit_filtered <- reddit_data %>%
   filter(SOURCE_SUBREDDIT %in% top_subreddits)
 
-# Convert timestamp to date
+# timestamp to date
 reddit_filtered$DATE <- as.Date(reddit_filtered$TIMESTAMP)
 
 ggplot(reddit_filtered, aes(x = DATE, y = SOURCE_SUBREDDIT, height = ..density.., fill = SOURCE_SUBREDDIT)) +
   geom_density_ridges(stat = "density", alpha = 0.8) +
   theme_minimal() +
-  labs(title = "Distribution of Sentiment Scores Over Time",
+  labs(title = "Distribution of Post Frequency Over Time",
        x = "Date",
        y = "Subreddit",
        fill = "Subreddit") +
   theme(legend.position = "none")
 ```
-This is a joy plot to show how sentiment scores are distributed over time for different subreddits. The subreddit’s sentiment trends are visually distinct and we have clear vertical separation with the temporal patterns easy to spot (e.g., spikes in sentiment changes).
+This is a joy plot to show how post frequency are distributed over time for different subreddits. The subreddit’s posting trends are visually distinct and we have clear vertical separation with the temporal patterns easy to spot.
 
 ## Figure 4:
 ```{r}
