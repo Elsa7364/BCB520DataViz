@@ -1,0 +1,181 @@
+---
+title: "Hockey Analytics"
+subtitle: "Assignment 5: NHL Player Award Ballots"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    html-math-method: katex
+    code-copy: true
+    code-fold: true
+    code-tools: true
+execute:
+  warning: false
+  message: false
+  error: false
+---
+
+In this assignment, I will create data driven ballots for 6 NHL awards, ranking five players per category. These awards such as the Hart Memorial Trophy for MVP, the Vezina Trophy for top goaltender, and the Calder Memorial Trophy for best rookie are determined by subjective voting, but my approach will rely on relevant performance metrics.
+
+# Reading the data and basic joins and filtering
+
+```{r}
+library(tidyverse)
+library(kableExtra)
+library(pillar)
+
+
+base_url <- "https://raw.githubusercontent.com/ProfessorPolymorphic/BCB520/main/posts/A5-TabularData/"
+
+rookie_goalies      <- read_csv(paste0(base_url, "RookieGoalies.csv"))
+rookie_skaters_ind  <- read_csv(paste0(base_url, "RookieSkaterIndividual.csv"))
+rookie_skaters_onice<- read_csv(paste0(base_url, "RookieSkaterOnIce.csv"))
+skaters_ind         <- read_csv(paste0(base_url, "SkaterIndividualstats.csv"))
+skaters_onice       <- read_csv(paste0(base_url, "SkaterOnIcestats.csv"))
+
+```
+
+```{r}
+all_skaters <- skaters_onice %>%
+  inner_join(skaters_ind, by = c("Player", "Team", "Position", "GP"))
+
+rookie_skaters <- rookie_skaters_onice %>%
+  inner_join(rookie_skaters_ind, by = c("Player", "Team", "Position", "GP"))
+
+```
+
+# Hart Memorial Trophy
+
+This is for player most valuable to the team. The criteria I will use is total points per game in at least 30 games played.
+
+```{r}
+mvp_candidates <- all_skaters %>%
+  filter(GP >= 30) %>%
+  mutate(PPG = `Total Points` / GP) %>%
+  arrange(desc(PPG)) %>%
+  select(Player, Team, Position, GP, `Total Points`, PPG)
+
+#ballot
+mvp_top5 <- head(mvp_candidates, 5)
+
+```
+
+# Vezina Trophy
+
+This is for the top goaltender. I will use saves and goals against as metrics.
+
+```{r}
+vezina_candidates <- rookie_goalies %>%
+  filter(GP >= 30) %>%
+  mutate(SavePercentage = Saves / (Saves + `Goals Against`)) %>%
+  arrange(desc(SavePercentage)) %>% 
+  select(Player, Team, GP, Saves, `Goals Against`, SavePercentage)
+
+#ballot
+vezina_top5 <- head(vezina_candidates, 5)
+
+```
+
+# Calder Memorial Trophy
+
+This is for rookie of the year, the most proficient player in his first year of competition.
+
+```{r}
+calder_candidates <- rookie_skaters %>%
+  filter(GP >= 30) %>%
+  mutate(PPG = `Total Points` / GP) %>%
+  arrange(desc(PPG)) %>%
+  select(Player, Team, Position, GP, `Total Points`, PPG)
+
+#ballot
+calder_top5 <- head(calder_candidates, 5)
+
+```
+
+# James Norris Memorial Trophy
+
+This is awarded to the defenseman with the greatest all around ability. I will filter by Position == "D" and use a hypothetical Impact metric, which will be the total of points and assists relative to time on ice.
+
+```{r}
+norris_candidates <- all_skaters %>%
+  filter(Position == "D", GP >= 30) %>%
+  mutate(Impact = (`Total Points` + `Total Assists`) / TOI.x) %>% 
+  arrange(desc(Impact)) %>%
+  select(Player, Team, GP, `Total Points`, `Total Assists`, Impact)
+
+#ballot
+norris_top5 <- head(norris_candidates, 5)
+```
+
+# Frank J. Selke Trophy
+
+This is for the forwards player who best excels in the defensive aspects of the game. I will be using on ice shot for percentage.
+
+```{r}
+selke_candidates <- all_skaters %>%
+  filter(Position %in% c("C", "R"), GP >= 30) %>%
+  mutate(DefensiveRating = `SF%`) %>%
+  arrange(desc(DefensiveRating)) %>%
+  select(Player, Team, GP, `Total Points`, `SF%`, DefensiveRating)
+
+selke_top5 <- head(selke_candidates, 5)
+
+```
+
+# Lady Byng Memorial Trophy
+
+This is for the player who has best sportsmanship while also having a high standard of playing. I will use low penalty minutes (PIM) as a proxy for that.
+
+```{r}
+lady_byng_candidates <- all_skaters %>%
+  filter(GP >= 30) %>% 
+  mutate(Sportsmanship = ifelse(PIM == 0, 1, 1 / PIM)) %>%
+  arrange(desc(Sportsmanship)) %>%
+  select(Player, Team, GP, PIM, Sportsmanship)
+
+#ballot
+lady_byng_top5 <- head(lady_byng_candidates, 5)
+
+```
+
+# Showing each ballot seprately
+
+```{r}
+## Hart Memorial Trophy
+mvp_top5
+
+## Vezina Trophy
+vezina_top5
+
+## Calder Memorial Trophy
+calder_top5
+
+## James Norris Memorial Trophy
+norris_top5
+
+## Frank J. Selke Trophy
+selke_top5
+
+## Lady Byng Memorial Trophy
+lady_byng_top5
+```
+
+# The ballots in a single table
+
+```{r}
+ballots_combined <- bind_rows(
+  mvp_top5 %>% mutate(Award = "Hart Memorial Trophy", Rank = row_number()),
+  vezina_top5 %>% mutate(Award = "Vezina Trophy", Rank = row_number()),
+  calder_top5 %>% mutate(Award = "Calder Memorial Trophy", Rank = row_number()),
+  norris_top5 %>% mutate(Award = "James Norris Memorial Trophy", Rank = row_number()),
+  selke_top5 %>% mutate(Award = "Frank J. Selke Trophy", Rank = row_number()),
+  lady_byng_top5 %>% mutate(Award = "Lady Byng Memorial Trophy", Rank = row_number())
+) %>%
+  mutate(Voter = "Marwa") %>%
+  select(Voter, Rank, Award, Player)
+
+# Display the full table
+ballots_combined %>% 
+  kable("html") %>% 
+  kable_styling(full_width = TRUE, bootstrap_options = c("striped", "hover", "condensed"))
+```
