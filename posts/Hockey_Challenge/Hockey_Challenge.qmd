@@ -1,0 +1,210 @@
+---
+title: "Hockey Challenge"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    html-math-method: katex
+    code-copy: true
+    code-fold: true
+    code-tools: true
+execute:
+  warning: false
+  message: false
+  error: false
+---
+Interoperability is the ability of different systems, datasets, or tools to work together seamlessly, whether that means sharing, merging, or analyzing data across different formats or structures.
+
+When we tried to merge everyone’s award ballots into one dataset, it quickly became clear how important interoperability is. Everyone had different file types, different column names, and different structures. Without a shared format or standard, combining our work became way harder and took way longer than it should have. Interoperability is basically about making systems and datasets able to talk to each other smoothly. If we had agreed on consistent variable names and formats from the start, the merge would’ve been way easier—and the focus could’ve stayed on the actual analysis, not cleaning up the mess. Definitely a lesson learned for future collab-heavy projects.
+
+In this assignment, I will merge the datasets, then I will be calculating points from the ballots. Since the awards use a ranked voting system simulating the real NHL voting process, each ballot assigns weighted points—like 10 for 1st place, 7 for 2nd, and so on. To get a final ranking, we’ll add up the points across everyone’s submissions.
+
+The player (or nominee) with the highest total number of points across all ballots is the winner. In other words, the most consistently high-ranked pick across everyone’s votes takes the award (?).
+
+```{r}
+library(readr)   
+library(readxl)
+library(dplyr)
+library(janitor)
+
+clair <- read_csv("Clair_ballots.csv")
+john <- read_csv("John_ballots.csv")
+marwa <- read_csv("Marwa_ballots.csv")
+
+priya <- read_excel("Priya_ballots.xlsx")
+henry <- read_excel("Henry_ballots.xlsx")
+ian <- read_excel("Ian_ballots.xlsx")
+betsy <- read_excel("Betsy_ballots.xlsx")
+barrie <- read_excel("Barrie_ballots.xlsx")
+justice <- read_excel("Justice_ballots.xlsx")
+
+sharon <- readRDS("sharon_ballot.rds")
+
+```
+
+# Combine all into one dataframe 
+## Loop through all data frames and print the column names to spot inconsistencies
+
+```{r}
+ballots <- list(
+  clair = clair,
+  john = john,
+  marwa = marwa,
+  priya = priya,
+  henry = henry,
+  ian = ian,
+  betsy = betsy,
+  barrie = barrie,
+  justice = justice,
+  sharon = sharon
+)
+
+lapply(ballots, names)
+
+```
+## Clean all the tidy/long ones, fix Priya's wide format, and merge!
+```{r}
+
+clean_tidy_ballot <- function(df) {
+  df %>%
+    janitor::clean_names() %>%
+    rename_with(~ gsub("trophy", "award", ., ignore.case = TRUE)) %>%
+    rename(
+      voter = voter,
+      award = award,
+      rank = rank,
+      player = player
+    ) %>%
+    select(voter, award, rank, player)
+}
+
+tidy_names <- c("clair", "john", "marwa", "henry", "ian", "betsy", "barrie", "justice", "sharon")
+
+tidy_cleaned <- lapply(tidy_names, function(name) clean_tidy_ballot(ballots[[name]]))
+
+clean_wide_ballot <- function(df) {
+  df %>%
+    janitor::clean_names() %>%
+    pivot_longer(
+      cols = -c(voter, rank),
+      names_to = "award",
+      values_to = "player"
+    ) %>%
+    mutate(rank = as.numeric(rank)) %>%
+    select(voter, award, rank, player)
+}
+priya_cleaned <- clean_wide_ballot(ballots$priya)
+all_ballots <- bind_rows(tidy_cleaned, priya_cleaned)
+
+```
+
+# Scoring the votes and rank nominees
+## Define the scoring system
+```{r}
+point_values <- c(`1` = 10, `2` = 7, `3` = 5, `4` = 3, `5` = 1)
+```
+## Adding a column based on rank
+```{r}
+all_ballots <- all_ballots %>%
+  mutate(points = point_values[as.character(rank)])
+```
+## Calculate total points for player each award
+```{r}
+final_scores <- all_ballots %>%
+  group_by(award, player) %>%
+  summarise(
+    total_points = sum(points, na.rm = TRUE),
+    n_votes = n()
+  ) %>%
+  arrange(award, desc(total_points)) %>%
+  ungroup()
+print(final_scores)
+
+```
+## Top 3 for each award
+```{r}
+library(dplyr)
+
+top3 <- final_scores %>%
+  group_by(award) %>%
+  slice_max(total_points, n = 3) %>%
+  arrange(award, desc(total_points))
+
+print(top3)
+
+```
+# Which classmate’s ballot matched the final results most closely?
+## Give each player an official rank based on their total points (1st place = top scorer).
+```{r}
+final_ranks <- final_scores %>%
+  group_by(award) %>%
+  arrange(desc(total_points)) %>%
+  mutate(final_rank = row_number()) %>%
+  select(award, player, final_rank)
+
+```
+
+## Join final rank to individual ballots 
+```{r}
+ballots_with_ranks <- all_ballots %>%
+  left_join(final_ranks, by = c("award", "player"))
+```
+
+## Calculate "distance" from final rank
+A good metric could be the sum of absolute differences between a voter's rank and the final rank.
+```{r}
+voter_agreement <- ballots_with_ranks %>%
+  mutate(rank_diff = abs(rank - final_rank)) %>%
+  group_by(voter) %>%
+  summarise(total_difference = sum(rank_diff, na.rm = TRUE)) %>%
+  arrange(total_difference)
+
+```
+
+# The closest voter!
+```{r}
+voter_agreement %>%
+  slice_min(total_difference, n = 1)
+
+```
+Turns out Priya and Sharon each had a total difference of **zero** — meaning they *perfectly* matched the final, class-wide rankings for every award!
+
+That’s kind of wild. Either they’ve got future NHL scouting careers ahead of them, or they were just totally in sync with the group consensus. 
+
+Also, shoutout to Sharon who was worried there might be a tie and said, *"we can fight over it first."*  
+Welp… here’s your prophecy fulfilled 😄
+
+# Finally here is a ranking of everyone
+```{r}
+print(voter_agreement)
+
+```
+
+```{r}
+library(ggplot2)
+
+# an accuracy metric higher is better.
+max_diff <- max(voter_agreement$total_difference)
+voter_agreement <- voter_agreement %>%
+  mutate(accuracy = max_diff - total_difference,
+         label = ifelse(total_difference == 0, "🏆", ""))
+
+ggplot(voter_agreement, aes(x = reorder(voter, accuracy), y = accuracy)) +
+  geom_bar(stat = "identity", fill = "forestgreen") +
+  coord_flip() +
+  geom_text(aes(label = paste0(accuracy, " ", label)), 
+            hjust = -0.1, size = 5) +
+  labs(
+    title = "Hockey Challenge: Voter Accuracy",
+    subtitle = "Higher accuracy scores indicate a closer match to the final ranking",
+    x = "Voter",
+    y = "Accuracy Score"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 12)
+  )
+
+```
+
