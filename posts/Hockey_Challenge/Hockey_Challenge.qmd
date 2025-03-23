@@ -25,9 +25,11 @@ The player (or nominee) with the highest total number of points across all ballo
 library(readr)
 library(readxl)
 library(dplyr)
+library(stringr)
 library(janitor)
 library(tidyr)
 library(ggplot2)
+
 
 ```
 
@@ -102,6 +104,32 @@ tidy_names <- c("clair", "john", "marwa", "henry", "ian", "betsy", "barrie", "ju
 tidy_cleaned <- lapply(tidy_names, function(name) clean_tidy_ballot(ballots[[name]]))
 priya_cleaned <- clean_wide_ballot(ballots$priya)
 all_ballots <- dplyr::bind_rows(tidy_cleaned, priya_cleaned)
+
+#checking for inconsistencies
+
+unique(all_ballots$award)
+
+standardize_award <- function(award) {
+  award <- tolower(award)
+  award <- gsub("_", " ", award)
+  award <- trimws(award)
+
+  case_when(
+    str_detect(award, "hart") ~ "Hart Memorial Trophy",
+    str_detect(award, "vezina") ~ "Vezina Trophy",
+    str_detect(award, "norris") ~ "James Norris Memorial Trophy",
+    str_detect(award, "calder") ~ "Calder Memorial Trophy",
+    str_detect(award, "selke") ~ "Frank J. Selke Trophy",
+    str_detect(award, "lady byng") ~ "Lady Byng Memorial Trophy",
+    TRUE ~ str_to_title(award)
+  )
+}
+
+all_ballots <- all_ballots %>%
+  mutate(award = standardize_award(award))
+
+unique(all_ballots$award)
+
 
 ```
 
@@ -190,12 +218,6 @@ voter_agreement %>%
 
 ```
 
-Turns out Priya and Sharon each had a total difference of **zero** — meaning they *perfectly* matched the final, class-wide rankings for every award!
-
-That’s kind of wild!
-
-Also, shoutout to Sharon who was worried there might be a tie. Welp… here’s your prophecy fulfilled!
-
 # Finally here is a ranking of everyone
 
 ```{r}
@@ -203,29 +225,43 @@ print(voter_agreement)
 
 ```
 
-```{r}
-library(ggplot2)
+```{r, fig.width=10, fig.height=6}
 
 max_diff <- max(voter_agreement$total_difference)
+
 voter_agreement <- voter_agreement %>%
-  mutate(accuracy = max_diff - total_difference,
-         label = ifelse(total_difference == 0, "🏆", ""))
+  mutate(
+    accuracy = max_diff - total_difference,
+    label = ifelse(total_difference == 0, "🏆 Perfect!", as.character(accuracy))
+  )
+
 
 ggplot(voter_agreement, aes(x = reorder(voter, accuracy), y = accuracy)) +
-  geom_bar(stat = "identity", fill = "forestgreen") +
+  geom_bar(aes(fill = accuracy), stat = "identity") +
+  scale_fill_gradient(low = "#B0C4DE", high = "#1D428A") +
   coord_flip() +
-  geom_text(aes(label = paste0(accuracy, " ", label)), 
-            hjust = -0.1, size = 5) +
+  geom_vline(xintercept = mean(voter_agreement$accuracy), linetype = "dashed", color = "gray40") +
+  geom_text(
+    aes(label = label),
+    hjust = -0.05,
+    size = 4.2,
+    fontface = "bold"
+  ) +
   labs(
-    title = "Hockey Challenge: Voter Accuracy",
-    subtitle = "Higher accuracy scores indicate a closer match to the final ranking",
+    title = "🏒 Voter Power Play Rankings",
+    subtitle = "Who nailed the final picks? Accuracy scores based on distance from consensus rankings",
     x = "Voter",
-    y = "Accuracy Score"
+    y = "Accuracy Score",
+    fill = "Accuracy"
   ) +
   theme_minimal() +
   theme(
     plot.title = element_text(face = "bold", size = 16),
-    plot.subtitle = element_text(size = 12)
-  )
+    plot.subtitle = element_text(size = 12),
+    axis.text.y = element_text(size = 11),
+    axis.text.x = element_text(size = 10),
+    legend.position = "bottom"
+  ) +
+  expand_limits(y = max(voter_agreement$accuracy) * 1.1)
 
 ```
