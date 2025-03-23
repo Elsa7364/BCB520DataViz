@@ -19,7 +19,7 @@ When we tried to merge everyone’s award ballots into one dataset, it quickly b
 
 In this assignment, I will merge the datasets, then I will be calculating points from the ballots. Since the awards use a ranked voting system simulating the real NHL voting process, each ballot assigns weighted points—like 10 for 1st place, 7 for 2nd, and so on. To get a final ranking, we’ll add up the points across everyone’s submissions.
 
-The player (or nominee) with the highest total number of points across all ballots is the winner. In other words, the most consistently high-ranked pick across everyone’s votes takes the award (?).
+The player (or nominee) with the highest total number of points across all ballots is the winner. In other words, the one with most consistently high-ranked pick across everyone’s votes takes the award (?).
 
 ```{r setup, include=FALSE}
 library(readr)
@@ -192,10 +192,9 @@ voter_agreement %>%
 
 Turns out Priya and Sharon each had a total difference of **zero** — meaning they *perfectly* matched the final, class-wide rankings for every award!
 
-That’s kind of wild. Either they’ve got future NHL scouting careers ahead of them, or they were just totally in sync with the group consensus.
+That’s kind of wild!
 
-Also, shoutout to Sharon who was worried there might be a tie and said, *"we can fight over it first."*\
-Welp… here’s your prophecy fulfilled 😄
+Also, shoutout to Sharon who was worried there might be a tie. Welp… here’s your prophecy fulfilled!
 
 # Finally here is a ranking of everyone
 
