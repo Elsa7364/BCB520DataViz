@@ -1,5 +1,75 @@
 [
   {
+    "objectID": "posts/Hockey_Challenge/Hockey_Challenge.html",
+    "href": "posts/Hockey_Challenge/Hockey_Challenge.html",
+    "title": "Hockey Ballot Blender",
+    "section": "",
+    "text": "Interoperability is the ability of different systems, datasets, or tools to work together seamlessly, whether that means sharing, merging, or analyzing data across different formats or structures.\nWhen we tried to merge everyone’s award ballots into one dataset, it quickly became clear how important interoperability is. Everyone had different file types, different column names, and different structures. Without a shared format or standard, combining our work became way harder and took way longer than it should have. Interoperability is basically about making systems and datasets able to talk to each other smoothly. If we had agreed on consistent variable names and formats from the start, the merge would’ve been way easier—and the focus could’ve stayed on the actual analysis, not cleaning up the mess. Definitely a lesson learned for future collab-heavy projects.\nIn this assignment, I will merge the datasets, then I will be calculating points from the ballots. Since the awards use a ranked voting system simulating the real NHL voting process, each ballot assigns weighted points—like 10 for 1st place, 7 for 2nd, and so on. To get a final ranking, we’ll add up the points across everyone’s submissions.\nThe player (or nominee) with the highest total number of points across all ballots is the winner. In other words, the most consistently high-ranked pick across everyone’s votes takes the award (?).\nCode\nclair &lt;- read_csv(\"Clair_ballots.csv\")\njohn &lt;- read_csv(\"John_ballots.csv\")\nmarwa &lt;- read_csv(\"Marwa_ballots.csv\")\n\npriya &lt;- read_excel(\"Priya_ballots.xlsx\")\nhenry &lt;- read_excel(\"Henry_ballots.xlsx\")\nian &lt;- read_excel(\"Ian_ballots.xlsx\")\nbetsy &lt;- read_excel(\"Betsy_ballots.xlsx\")\nbarrie &lt;- read_excel(\"Barrie_ballots.xlsx\")\njustice &lt;- read_excel(\"Justice_ballots.xlsx\")\n\nsharon &lt;- readRDS(\"sharon_ballot.rds\")"
+  },
+  {
+    "objectID": "posts/Hockey_Challenge/Hockey_Challenge.html#loop-through-all-data-frames-and-print-the-column-names-to-spot-inconsistencies",
+    "href": "posts/Hockey_Challenge/Hockey_Challenge.html#loop-through-all-data-frames-and-print-the-column-names-to-spot-inconsistencies",
+    "title": "Hockey Ballot Blender",
+    "section": "Loop through all data frames and print the column names to spot inconsistencies",
+    "text": "Loop through all data frames and print the column names to spot inconsistencies\n\n\nCode\nballots &lt;- list(\n  clair = clair,\n  john = john,\n  marwa = marwa,\n  priya = priya,\n  henry = henry,\n  ian = ian,\n  betsy = betsy,\n  barrie = barrie,\n  justice = justice,\n  sharon = sharon\n)\n\nlapply(ballots, names)\n\n\n$clair\n[1] \"Voter\"  \"Rank\"   \"Award\"  \"Player\"\n\n$john\n[1] \"Voter\"  \"Award\"  \"Rank\"   \"Player\"\n\n$marwa\n[1] \"Voter\"  \"Rank\"   \"Award\"  \"Player\"\n\n$priya\n[1] \"Voter\"                        \"Rank\"                        \n[3] \"Vezina Trophy\"                \"Hart Memorial Trophy\"        \n[5] \"James Norris Memorial Trophy\" \"Calder Memorial Trophy\"      \n[7] \"Frank J. Selke Trophy\"        \"Lady Byng Memorial Trophy\"   \n\n$henry\n[1] \"Voter\"  \"Award\"  \"Rank\"   \"Player\"\n\n$ian\n[1] \"Voter\"  \"Trophy\" \"Rank\"   \"Player\"\n\n$betsy\n[1] \"Voter\"  \"Award\"  \"Rank\"   \"Player\"\n\n$barrie\n[1] \"Voter\"  \"Award\"  \"Player\" \"Rank\"  \n\n$justice\n[1] \"Voter\"  \"Award\"  \"Player\" \"Rank\"  \n\n$sharon\n[1] \"Player\" \"Rank\"   \"Voter\"  \"Award\""
+  },
+  {
+    "objectID": "posts/Hockey_Challenge/Hockey_Challenge.html#clean-all-the-tidylong-ones-fix-priyas-wide-format-and-merge",
+    "href": "posts/Hockey_Challenge/Hockey_Challenge.html#clean-all-the-tidylong-ones-fix-priyas-wide-format-and-merge",
+    "title": "Hockey Ballot Blender",
+    "section": "Clean all the tidy/long ones, fix Priya’s wide format, and merge!",
+    "text": "Clean all the tidy/long ones, fix Priya’s wide format, and merge!\n\n\nCode\nclean_tidy_ballot &lt;- function(df) {\n  df %&gt;%\n    janitor::clean_names() %&gt;%\n    dplyr::rename_with(~ gsub(\"trophy\", \"award\", ., ignore.case = TRUE)) %&gt;%\n    dplyr::rename(\n      voter = voter,\n      award = award,\n      rank = rank,\n      player = player\n    ) %&gt;%\n    dplyr::select(voter, award, rank, player)\n}\n\nclean_wide_ballot &lt;- function(df) {\n  df %&gt;%\n    janitor::clean_names() %&gt;%\n    tidyr::pivot_longer(\n      cols = -c(voter, rank),\n      names_to = \"award\",\n      values_to = \"player\"\n    ) %&gt;%\n    dplyr::mutate(rank = as.numeric(rank)) %&gt;%\n    dplyr::select(voter, award, rank, player)\n}\n\ntidy_names &lt;- c(\"clair\", \"john\", \"marwa\", \"henry\", \"ian\", \"betsy\", \"barrie\", \"justice\", \"sharon\")\ntidy_cleaned &lt;- lapply(tidy_names, function(name) clean_tidy_ballot(ballots[[name]]))\npriya_cleaned &lt;- clean_wide_ballot(ballots$priya)\nall_ballots &lt;- dplyr::bind_rows(tidy_cleaned, priya_cleaned)"
+  },
+  {
+    "objectID": "posts/Hockey_Challenge/Hockey_Challenge.html#define-the-scoring-system",
+    "href": "posts/Hockey_Challenge/Hockey_Challenge.html#define-the-scoring-system",
+    "title": "Hockey Ballot Blender",
+    "section": "Define the scoring system",
+    "text": "Define the scoring system\n\n\nCode\npoint_values &lt;- c(`1` = 10, `2` = 7, `3` = 5, `4` = 3, `5` = 1)"
+  },
+  {
+    "objectID": "posts/Hockey_Challenge/Hockey_Challenge.html#adding-a-column-based-on-rank",
+    "href": "posts/Hockey_Challenge/Hockey_Challenge.html#adding-a-column-based-on-rank",
+    "title": "Hockey Ballot Blender",
+    "section": "Adding a column based on rank",
+    "text": "Adding a column based on rank\n\n\nCode\nall_ballots &lt;- all_ballots %&gt;%\n  mutate(points = point_values[as.character(rank)])"
+  },
+  {
+    "objectID": "posts/Hockey_Challenge/Hockey_Challenge.html#calculate-total-points-for-player-each-award",
+    "href": "posts/Hockey_Challenge/Hockey_Challenge.html#calculate-total-points-for-player-each-award",
+    "title": "Hockey Ballot Blender",
+    "section": "Calculate total points for player each award",
+    "text": "Calculate total points for player each award\n\n\nCode\nfinal_scores &lt;- all_ballots %&gt;%\n  group_by(award, player) %&gt;%\n  summarise(\n    total_points = sum(points, na.rm = TRUE),\n    n_votes = n()\n  ) %&gt;%\n  arrange(award, desc(total_points)) %&gt;%\n  ungroup()\nprint(final_scores)\n\n\n# A tibble: 249 × 4\n   award                  player           total_points n_votes\n   &lt;chr&gt;                  &lt;chr&gt;                   &lt;dbl&gt;   &lt;int&gt;\n 1 Calder Memorial        Kirill Marchenko           10       1\n 2 Calder Memorial        Matthew Knies               7       1\n 3 Calder Memorial        Wyatt Johnston              5       1\n 4 Calder Memorial        Marco Rossi                 3       1\n 5 Calder Memorial        JJ Peterka                  1       1\n 6 Calder Memorial Trophy Wyatt Johnston             28       4\n 7 Calder Memorial Trophy Kirill Marchenko           25       3\n 8 Calder Memorial Trophy Dylan Holloway             16       3\n 9 Calder Memorial Trophy Bobby Brink                10       1\n10 Calder Memorial Trophy Jake Sanders               10       1\n# ℹ 239 more rows"
+  },
+  {
+    "objectID": "posts/Hockey_Challenge/Hockey_Challenge.html#top-3-for-each-award",
+    "href": "posts/Hockey_Challenge/Hockey_Challenge.html#top-3-for-each-award",
+    "title": "Hockey Ballot Blender",
+    "section": "Top 3 for each award",
+    "text": "Top 3 for each award\n\n\nCode\nlibrary(dplyr)\n\ntop3 &lt;- final_scores %&gt;%\n  group_by(award) %&gt;%\n  slice_max(total_points, n = 3) %&gt;%\n  arrange(award, desc(total_points))\n\nprint(top3)\n\n\n# A tibble: 72 × 4\n# Groups:   award [18]\n   award                  player            total_points n_votes\n   &lt;chr&gt;                  &lt;chr&gt;                    &lt;dbl&gt;   &lt;int&gt;\n 1 Calder Memorial        Kirill Marchenko            10       1\n 2 Calder Memorial        Matthew Knies                7       1\n 3 Calder Memorial        Wyatt Johnston               5       1\n 4 Calder Memorial Trophy Wyatt Johnston              28       4\n 5 Calder Memorial Trophy Kirill Marchenko            25       3\n 6 Calder Memorial Trophy Dylan Holloway              16       3\n 7 Frank J. Selke Trophy  Jackson Blake               17       2\n 8 Frank J. Selke Trophy  Fabian Zetterlund           14       2\n 9 Frank J. Selke Trophy  Brandon Tanev               10       1\n10 Frank J. Selke Trophy  Cale Makar                  10       1\n# ℹ 62 more rows"
+  },
+  {
+    "objectID": "posts/Hockey_Challenge/Hockey_Challenge.html#each-player-gets-an-official-rank-based-on-their-total-points-1st-place-top-scorer.",
+    "href": "posts/Hockey_Challenge/Hockey_Challenge.html#each-player-gets-an-official-rank-based-on-their-total-points-1st-place-top-scorer.",
+    "title": "Hockey Ballot Blender",
+    "section": "Each player gets an official rank based on their total points (1st place = top scorer).",
+    "text": "Each player gets an official rank based on their total points (1st place = top scorer).\n\n\nCode\nfinal_ranks &lt;- final_scores %&gt;%\n  group_by(award) %&gt;%\n  arrange(desc(total_points)) %&gt;%\n  mutate(final_rank = row_number()) %&gt;%\n  select(award, player, final_rank)"
+  },
+  {
+    "objectID": "posts/Hockey_Challenge/Hockey_Challenge.html#joining-final-rank-to-individual-ballots",
+    "href": "posts/Hockey_Challenge/Hockey_Challenge.html#joining-final-rank-to-individual-ballots",
+    "title": "Hockey Ballot Blender",
+    "section": "Joining final rank to individual ballots",
+    "text": "Joining final rank to individual ballots\n\n\nCode\nballots_with_ranks &lt;- all_ballots %&gt;%\n  left_join(final_ranks, by = c(\"award\", \"player\"))"
+  },
+  {
+    "objectID": "posts/Hockey_Challenge/Hockey_Challenge.html#calculating-distance-from-final-rank",
+    "href": "posts/Hockey_Challenge/Hockey_Challenge.html#calculating-distance-from-final-rank",
+    "title": "Hockey Ballot Blender",
+    "section": "Calculating distance from final rank",
+    "text": "Calculating distance from final rank\nA good metric could be the sum of absolute differences between a voter’s rank and the final rank.\n\n\nCode\nvoter_agreement &lt;- ballots_with_ranks %&gt;%\n  mutate(rank_diff = abs(rank - final_rank)) %&gt;%\n  group_by(voter) %&gt;%\n  summarise(total_difference = sum(rank_diff, na.rm = TRUE)) %&gt;%\n  arrange(total_difference)"
+  },
+  {
     "objectID": "posts/Assignment4/Assignment4.html",
     "href": "posts/Assignment4/Assignment4.html",
     "title": "Subreddit Wars",
@@ -95,7 +165,7 @@
     "href": "index.html",
     "title": "BCB520 Portfolio",
     "section": "",
-    "text": "Welcome to My BCB520 Portfolio!\nThis is my learning journey through BCB520! I’ll be posting my assignments and exploring data visualization along the way. By the end of the semester, I hope this turns into a cool portfolio showcasing my progress.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAnscombe’s Quartet Visualization\n\n\nAssignment 1\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nData Visualization using Reddit Hyperlink Network\n\n\nAssignment 2 & 3\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nSubreddit Wars\n\n\nAssignment 4: Marks and Channels\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nHockey Analytics\n\n\nAssignment 5: NHL Player Award Ballots\n\n\n\n\n\n\n\n\n\n\n\n\nNo matching items"
+    "text": "Welcome to My BCB520 Portfolio!\nThis is my learning journey through BCB520! I’ll be posting my assignments and exploring data visualization along the way. By the end of the semester, I hope this turns into a cool portfolio showcasing my progress.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAnscombe’s Quartet Visualization\n\n\nAssignment 1\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nData Visualization using Reddit Hyperlink Network\n\n\nAssignment 2 & 3\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nSubreddit Wars\n\n\nAssignment 4: Marks and Channels\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nHockey Analytics\n\n\nAssignment 5: NHL Player Award Ballots\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nHockey Ballot Blender\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "posts/Assignment2_3/Assignment_2.html",

@@ -1,5 +1,5 @@
 ---
-title: "Hockey Challenge"
+title: "Hockey Ballot Blender"
 format:
   html:
     toc: true
@@ -11,7 +11,7 @@ format:
 execute:
   warning: false
   message: false
-  error: false
+  error: true
 ---
 Interoperability is the ability of different systems, datasets, or tools to work together seamlessly, whether that means sharing, merging, or analyzing data across different formats or structures.
 
@@ -21,12 +21,17 @@ In this assignment, I will merge the datasets, then I will be calculating points
 
 The player (or nominee) with the highest total number of points across all ballots is the winner. In other words, the most consistently high-ranked pick across everyone’s votes takes the award (?).
 
-```{r}
-library(readr)   
+```{r setup, include=FALSE}
+library(readr)
 library(readxl)
 library(dplyr)
 library(janitor)
+library(tidyr)
+library(ggplot2)
 
+```
+
+```{r}
 clair <- read_csv("Clair_ballots.csv")
 john <- read_csv("John_ballots.csv")
 marwa <- read_csv("Marwa_ballots.csv")
@@ -42,7 +47,8 @@ sharon <- readRDS("sharon_ballot.rds")
 
 ```
 
-# Combine all into one dataframe 
+# Combine all into one dataframe
+
 ## Loop through all data frames and print the column names to spot inconsistencies
 
 ```{r}
@@ -62,53 +68,60 @@ ballots <- list(
 lapply(ballots, names)
 
 ```
+
 ## Clean all the tidy/long ones, fix Priya's wide format, and merge!
+
 ```{r}
 
 clean_tidy_ballot <- function(df) {
   df %>%
     janitor::clean_names() %>%
-    rename_with(~ gsub("trophy", "award", ., ignore.case = TRUE)) %>%
-    rename(
+    dplyr::rename_with(~ gsub("trophy", "award", ., ignore.case = TRUE)) %>%
+    dplyr::rename(
       voter = voter,
       award = award,
       rank = rank,
       player = player
     ) %>%
-    select(voter, award, rank, player)
+    dplyr::select(voter, award, rank, player)
 }
-
-tidy_names <- c("clair", "john", "marwa", "henry", "ian", "betsy", "barrie", "justice", "sharon")
-
-tidy_cleaned <- lapply(tidy_names, function(name) clean_tidy_ballot(ballots[[name]]))
 
 clean_wide_ballot <- function(df) {
   df %>%
     janitor::clean_names() %>%
-    pivot_longer(
+    tidyr::pivot_longer(
       cols = -c(voter, rank),
       names_to = "award",
       values_to = "player"
     ) %>%
-    mutate(rank = as.numeric(rank)) %>%
-    select(voter, award, rank, player)
+    dplyr::mutate(rank = as.numeric(rank)) %>%
+    dplyr::select(voter, award, rank, player)
 }
+
+tidy_names <- c("clair", "john", "marwa", "henry", "ian", "betsy", "barrie", "justice", "sharon")
+tidy_cleaned <- lapply(tidy_names, function(name) clean_tidy_ballot(ballots[[name]]))
 priya_cleaned <- clean_wide_ballot(ballots$priya)
-all_ballots <- bind_rows(tidy_cleaned, priya_cleaned)
+all_ballots <- dplyr::bind_rows(tidy_cleaned, priya_cleaned)
 
 ```
 
 # Scoring the votes and rank nominees
+
 ## Define the scoring system
+
 ```{r}
 point_values <- c(`1` = 10, `2` = 7, `3` = 5, `4` = 3, `5` = 1)
 ```
+
 ## Adding a column based on rank
+
 ```{r}
 all_ballots <- all_ballots %>%
   mutate(points = point_values[as.character(rank)])
 ```
+
 ## Calculate total points for player each award
+
 ```{r}
 final_scores <- all_ballots %>%
   group_by(award, player) %>%
@@ -121,7 +134,9 @@ final_scores <- all_ballots %>%
 print(final_scores)
 
 ```
+
 ## Top 3 for each award
+
 ```{r}
 library(dplyr)
 
@@ -133,8 +148,11 @@ top3 <- final_scores %>%
 print(top3)
 
 ```
-# Which classmate’s ballot matched the final results most closely?
-## Give each player an official rank based on their total points (1st place = top scorer).
+
+# Rank assignment and distance calculation
+
+## Each player gets an official rank based on their total points (1st place = top scorer).
+
 ```{r}
 final_ranks <- final_scores %>%
   group_by(award) %>%
@@ -144,14 +162,17 @@ final_ranks <- final_scores %>%
 
 ```
 
-## Join final rank to individual ballots 
+## Joining final rank to individual ballots
+
 ```{r}
 ballots_with_ranks <- all_ballots %>%
   left_join(final_ranks, by = c("award", "player"))
 ```
 
-## Calculate "distance" from final rank
+## Calculating distance from final rank
+
 A good metric could be the sum of absolute differences between a voter's rank and the final rank.
+
 ```{r}
 voter_agreement <- ballots_with_ranks %>%
   mutate(rank_diff = abs(rank - final_rank)) %>%
@@ -162,19 +183,22 @@ voter_agreement <- ballots_with_ranks %>%
 ```
 
 # The closest voter!
+
 ```{r}
 voter_agreement %>%
   slice_min(total_difference, n = 1)
 
 ```
+
 Turns out Priya and Sharon each had a total difference of **zero** — meaning they *perfectly* matched the final, class-wide rankings for every award!
 
-That’s kind of wild. Either they’ve got future NHL scouting careers ahead of them, or they were just totally in sync with the group consensus. 
+That’s kind of wild. Either they’ve got future NHL scouting careers ahead of them, or they were just totally in sync with the group consensus.
 
-Also, shoutout to Sharon who was worried there might be a tie and said, *"we can fight over it first."*  
+Also, shoutout to Sharon who was worried there might be a tie and said, *"we can fight over it first."*\
 Welp… here’s your prophecy fulfilled 😄
 
 # Finally here is a ranking of everyone
+
 ```{r}
 print(voter_agreement)
 
@@ -183,7 +207,6 @@ print(voter_agreement)
 ```{r}
 library(ggplot2)
 
-# an accuracy metric higher is better.
 max_diff <- max(voter_agreement$total_difference)
 voter_agreement <- voter_agreement %>%
   mutate(accuracy = max_diff - total_difference,
@@ -207,4 +230,3 @@ ggplot(voter_agreement, aes(x = reorder(voter, accuracy), y = accuracy)) +
   )
 
 ```
-
