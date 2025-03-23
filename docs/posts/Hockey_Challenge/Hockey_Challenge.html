@@ -202,7 +202,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Interoperability is the ability of different systems, datasets, or tools to work together seamlessly, whether that means sharing, merging, or analyzing data across different formats or structures.</p>
 <p>When we tried to merge everyone’s award ballots into one dataset, it quickly became clear how important interoperability is. Everyone had different file types, different column names, and different structures. Without a shared format or standard, combining our work became way harder and took way longer than it should have. Interoperability is basically about making systems and datasets able to talk to each other smoothly. If we had agreed on consistent variable names and formats from the start, the merge would’ve been way easier—and the focus could’ve stayed on the actual analysis, not cleaning up the mess. Definitely a lesson learned for future collab-heavy projects.</p>
 <p>In this assignment, I will merge the datasets, then I will be calculating points from the ballots. Since the awards use a ranked voting system simulating the real NHL voting process, each ballot assigns weighted points—like 10 for 1st place, 7 for 2nd, and so on. To get a final ranking, we’ll add up the points across everyone’s submissions.</p>
-<p>The player (or nominee) with the highest total number of points across all ballots is the winner. In other words, the most consistently high-ranked pick across everyone’s votes takes the award (?).</p>
+<p>The player (or nominee) with the highest total number of points across all ballots is the winner. In other words, the one with most consistently high-ranked pick across everyone’s votes takes the award (?).</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -461,9 +461,8 @@ $sharon
 </div>
 </div>
 <p>Turns out Priya and Sharon each had a total difference of <strong>zero</strong> — meaning they <em>perfectly</em> matched the final, class-wide rankings for every award!</p>
-<p>That’s kind of wild. Either they’ve got future NHL scouting careers ahead of them, or they were just totally in sync with the group consensus.</p>
-<p>Also, shoutout to Sharon who was worried there might be a tie and said, <em>“we can fight over it first.”</em><br>
-Welp… here’s your prophecy fulfilled 😄</p>
+<p>That’s kind of wild!</p>
+<p>Also, shoutout to Sharon who was worried there might be a tie. Welp… here’s your prophecy fulfilled!</p>
 </section>
 <section id="finally-here-is-a-ranking-of-everyone" class="level1">
 <h1>Finally here is a ranking of everyone</h1>
