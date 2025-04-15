@@ -1,0 +1,257 @@
+---
+title: "Network Practice"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    html-math-method: katex
+    code-copy: true
+    code-fold: true
+    code-tools: true
+    include-in-header:
+      - text: |
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    include-after-body:
+      - text: |
+          <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+          <script>
+            const swiper = new Swiper('.swiper', {
+              loop: true,
+              spaceBetween: 30,
+              pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+              },
+              navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+              },
+            });
+          </script>
+
+execute:
+  warning: false
+  message: false
+  error: false
+---
+
+```{r}
+library(readxl)
+library(tidygraph)
+library(ggraph)
+library(igraph)
+library(dplyr)
+library(tidyverse)
+
+```
+
+```{r}
+file_path <- "Networksfixed.xlsx"
+
+people <- read_excel(file_path, sheet = "People")
+relations <- read_excel(file_path, sheet = "Relations")
+org_chart <- read_excel(file_path, sheet = "Sheet1")
+```
+# Advior and Department Network 
+This one shows how people are connected through advisors, with departments highlighted, so we can see clusters or bridges across groups.
+
+```{r}
+people <- read_excel("Networksfixed.xlsx", sheet = "People")
+relations <- read_excel("Networksfixed.xlsx", sheet = "Relations")
+
+graph <- tbl_graph(nodes = people, edges = relations, directed = TRUE)
+
+ggraph(graph, layout = "fr") +
+  geom_edge_link(aes(color = Advisor), alpha = 0.8) +
+  geom_node_point(aes(color = department), size = 4) +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  theme_void() +
+  labs(title = "Network of People & Advisor Relationships",
+       subtitle = "Edge color = Advisor, Node color = Department")
+
+```
+
+# People–Interest Bipartite Network
+Now let’s check out who shares interests. This plot connects each person to the topics they’re into.
+
+```{r}
+interests_raw <- read_excel("Networksfixed.xlsx", sheet = "Sheet1")
+
+interests_long <- interests_raw %>%
+  filter(!is.na(name)) %>%
+  pivot_longer(-name, names_to = "interest", values_to = "has_interest") %>%
+  filter(has_interest == 1)  # keep only ones they have
+
+people_nodes <- interests_long %>%
+  distinct(name) %>%
+  mutate(type = "person")
+
+interest_nodes <- interests_long %>%
+  distinct(interest) %>%
+  rename(name = interest) %>%
+  mutate(type = "interest")
+
+nodes <- bind_rows(people_nodes, interest_nodes)
+
+edges <- interests_long %>%
+  select(from = name, to = interest)
+
+interest_graph <- tbl_graph(nodes = nodes, edges = edges, directed = FALSE)
+
+ggraph(interest_graph, layout = "fr") +
+  geom_edge_link(alpha = 0.5) +
+  geom_node_point(aes(color = type), size = 4) +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  theme_void() +
+  labs(title = "Bipartite Network of People and Shared Interests")
+
+```
+
+# A subset of high-interest areas to reduce clutter
+The full interest network was a bit too messy, so I zoomed in on a few top interests 
+
+```{r}
+top_interests <- c("AI", "Lifting", "Data Science", "Gardening", "Movies")
+
+filtered_edges <- edges %>%
+  filter(to %in% top_interests)
+
+filtered_nodes <- nodes %>%
+  filter(name %in% filtered_edges$from | name %in% filtered_edges$to)
+
+filtered_graph <- tbl_graph(nodes = filtered_nodes, edges = filtered_edges, directed = FALSE)
+
+ggraph(filtered_graph, layout = "fr") +
+  geom_edge_link(alpha = 0.7) +
+  geom_node_point(aes(color = type), size = 4) +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  theme_void() +
+  labs(title = "Focused Network: People & Top Interests")
+
+```
+# Combined advisor + BCB520 network chart
+This one mixes both advisor connections and who’s in BCB520 together. It helps show not just formal mentorship links, but also who’s connected through class work.
+```{r}
+people <- read_excel("Networksfixed.xlsx", sheet = "People")
+relations <- read_excel("Networksfixed.xlsx", sheet = "Relations")
+
+# BCB520-based edges (only between students marked TRUE)
+bcb_edges <- people %>%
+  filter(BCB520 == TRUE) %>%
+  pull(name) %>%
+  combn(2) %>%
+  t() %>%
+  as.data.frame() %>%
+  setNames(c("from", "to")) %>%
+  mutate(BCB520 = TRUE,
+         Advisor = FALSE)
+
+# original Advisor edges
+relations <- relations %>%
+  mutate(Advisor = TRUE,
+         BCB520 = FALSE)
+
+# combine both edge types
+all_edges <- bind_rows(relations, bcb_edges)
+
+graph <- tbl_graph(nodes = people, edges = all_edges, directed = FALSE)
+
+ggraph(graph, layout = "fr") +
+  geom_edge_link(aes(color = case_when(
+    Advisor ~ "Advisor",
+    BCB520 ~ "BCB520"
+  )), alpha = 0.8, show.legend = TRUE) +
+  geom_node_point(aes(color = department), size = 4) +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_color_manual(
+    name = "Relationship Type",
+    values = c("Advisor" = "steelblue", "BCB520" = "forestgreen")
+  ) +
+  theme_void() +
+  labs(title = "Combined Network: Advisor & BCB520 Connections",
+       subtitle = "Edge color shows type of connection")
+
+```
+
+# Network layout gallery
+
+Before settling on a final layout, I wanted to compare how different algorithms visualize the same network. 
+Below are five versions of the exact same data—just laid out differently to see structure from different angles and also makes it easier to spot patterns.
+
+```{r}
+people <- read_excel("Networksfixed.xlsx", sheet = "People")
+relations <- read_excel("Networksfixed.xlsx", sheet = "Relations")
+
+bcb_edges <- people %>%
+  filter(BCB520 == TRUE) %>%
+  pull(name) %>%
+  combn(2) %>%
+  t() %>%
+  as.data.frame() %>%
+  setNames(c("from", "to")) %>%
+  mutate(BCB520 = TRUE, Advisor = FALSE)
+
+relations <- relations %>%
+  mutate(Advisor = TRUE, BCB520 = FALSE)
+
+all_edges <- bind_rows(relations, bcb_edges)
+
+graph <- tbl_graph(nodes = people, edges = all_edges, directed = FALSE)
+
+layouts <- c("fr", "kk", "graphopt", "stress", "drl")
+
+dir.create("plots", showWarnings = FALSE)
+
+# generate and save each plot
+for (lay in layouts) {
+  p <- ggraph(graph, layout = lay) +
+    geom_edge_link(aes(color = case_when(
+      Advisor ~ "Advisor",
+      BCB520 ~ "BCB520"
+    )), alpha = 0.8) +
+    geom_node_point(aes(color = department), size = 4) +
+    geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+    scale_edge_color_manual(name = "Relationship Type",
+                            values = c("Advisor" = "steelblue", "BCB520" = "forestgreen")) +
+    theme_void() +
+    labs(title = paste("Network Layout:", lay),
+         subtitle = "Comparing layout algorithms")
+
+  ggsave(filename = paste0("plots/network_", lay, ".png"), plot = p, width = 10, height = 8)
+}
+
+```
+
+Below are five different layouts for the same network. Scroll sideways to compare them.
+
+::: {style="overflow-x: auto; white-space: nowrap; padding: 1em; border: 1px solid #ddd; border-radius: 6px;"}
+<img src="plots/network_fr.png" style="height: 300px; margin-right: 10px;"/> <img src="plots/network_kk.png" style="height: 300px; margin-right: 10px;"/> <img src="plots/network_graphopt.png" style="height: 300px; margin-right: 10px;"/> <img src="plots/network_stress.png" style="height: 300px; margin-right: 10px;"/> <img src="plots/network_drl.png" style="height: 300px;"/>
+:::
+
+# Hierarchical Interest Network
+Here's a different way to look at the interest data: as a hierarchy.
+Instead of showing people connected to interests like in a standard network, this one treats interests as the root 
+and people as leaves. It gives a sense of which interests are more central and how people branch off from them.
+```{r}
+
+interests_raw <- read_excel("Networksfixed.xlsx", sheet = "Sheet1")
+
+interest_edges <- interests_raw %>%
+  pivot_longer(-name, names_to = "interest", values_to = "has_interest") %>%
+  filter(has_interest == 1) %>%
+  select(from = interest, to = name)
+
+hierarchy_graph <- tbl_graph(edges = interest_edges, directed = TRUE)
+
+ggraph(hierarchy_graph, layout = "sugiyama") +
+  geom_edge_link(alpha = 0.3) +
+  geom_node_point(aes(color = ifelse(name %in% interests_raw$name, "Person", "Interest")), size = 3) +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_color_manual(values = c("Person" = "steelblue", "Interest" = "forestgreen")) +
+  theme_void() +
+  labs(title = "Interest Network (Interest → Person)",
+       subtitle = "Cleaner layered view using sugiyama layout",
+       color = "Node Type")
+
+```
+
