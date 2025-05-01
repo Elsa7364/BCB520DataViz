@@ -1,0 +1,177 @@
+---
+title: "Validating AI Classifications in Research"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    code-copy: true
+    code-fold: true
+    code-tools: true
+execute:
+  warning: false
+  message: false
+  error: true
+jupyter: python3
+---
+
+# What the Project Is About?
+
+I'm working on a meta-analysis on polycentric water governance, which means a study that reviews and analyzes research on how different organizations and governments work together to manage water. My goal is to figure out what helps these kinds of shared management systems succeed—making sure they are effective, long-lasting, and fair for everyone involved.
+
+# This the initial pilot phase
+
+## I collected 45 academic papers on polycentric water governance and used AI (LLM) to classify these papers into four categories as each category will be matched with a certain analysis:
+
+-   **Empirical Research → Quantitative meta-analysis**
+-   **Theoretical Research → Thematic qualitative synthesis**
+-   **Case Studies:**
+    -   **Descriptive case studies → Thematic qualitative synthesis**
+    -   **Comparative case studies → Qualitative Comparative Analysis (QCA)**
+-   **Review & Synthesis Studies → Narrative or descriptive synthesis (possibly meta-synthesis)**
+
+## Then I selected 24 papers to manually reading and labeling them myself. Definitely an old school, handson process!
+
+## Finally, I compared my human classifications against the AI classifications and created visualizations of these comparisons.
+
+```{r, results='hide'}
+library(reticulate)
+
+# Install required packages
+py_install("pandas")
+py_install("numpy")
+py_install("scikit-learn")
+py_install("matplotlib")
+py_install("seaborn")
+```
+
+```{r, results='hide'}
+# Use your existing environment
+use_virtualenv("r-reticulate")
+
+# Install just the missing packages
+py_install("jupyter")
+py_install("pyyaml")
+
+```
+
+# Here we have a pie chart showing agreement distribution
+
+```{python}
+#| output: asis
+#| results: hide
+#| fig-cap: "Agreement Distribution in AI vs Human Classification"
+#| fig-width: 10
+#| fig-height: 8
+#| out-width: "100%"
+#| dpi: 300
+
+import matplotlib.pyplot as plt
+
+# Create figure
+plt.figure(figsize=(10, 8))
+
+# Papers breakdown pie chart
+papers = ['Agreements', 'Disagreements']
+values = [21, 3]
+colors = ['#2ecc71', '#e74c3c']
+explode = (0.05, 0.05)
+
+plt.pie(values, 
+        explode=explode, 
+        labels=papers, 
+        colors=colors, 
+        autopct='%1.1f%%',
+        shadow=True, 
+        startangle=90)
+
+plt.title('Agreement Distribution\n(Total Papers: 24)', 
+         pad=20, 
+         size=14, 
+         weight='bold')
+
+# Adjust layout
+plt.tight_layout()
+
+# Show plot
+plt.show()
+
+# Save figure
+plt.savefig('Analysis_results/agreement_distribution.png', 
+            bbox_inches='tight', 
+            dpi=300,
+            facecolor='white',
+            pad_inches=0.5)
+plt.close()
+```
+
+#Here we have a bar chart showing category distributions
+
+```{python}
+#| label: fig-analysis
+#| fig-width: 12
+#| fig-height: 10
+#| out-width: "100%"
+#| dpi: 300
+
+import os
+import pandas as pd
+import numpy as np
+from sklearn.metrics import cohen_kappa_score, confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Create output directory
+os.makedirs('Analysis_results', exist_ok=True)
+
+# Read the CSV file with 'latin1' encoding
+df = pd.read_csv('ground_truth_labels.csv', encoding='latin1')
+
+# Filter for first 25 papers that have human labels
+df_analyzed = df.head(25).dropna(subset=['human_category'])
+
+# Calculate metrics
+total_papers = len(df_analyzed)
+agreements = (df_analyzed['category'] == df_analyzed['human_category']).sum()
+accuracy = agreements / total_papers
+kappa = cohen_kappa_score(df_analyzed['human_category'], df_analyzed['category'])
+
+# Category distribution analysis
+category_stats = pd.DataFrame({
+    'AI_Count': df_analyzed['category'].value_counts(),
+    'Human_Count': df_analyzed['human_category'].value_counts()
+}).fillna(0)
+
+# Create and save category distribution bar plot
+plt.figure(figsize=(12, 10))  # Kept the large figure size
+category_stats.plot(kind='bar')
+plt.title('Category Distribution: AI vs Human', size=16, pad=20)
+plt.xlabel('Category', size=12, labelpad=15)
+plt.ylabel('Count', size=12, labelpad=15)
+plt.xticks(rotation=45, ha='right')
+plt.legend(['AI Classification', 'Human Classification'], fontsize=12)
+plt.tight_layout()
+plt.show()
+plt.savefig('Analysis_results/category_distribution.png', bbox_inches='tight', dpi=300)
+plt.close()
+
+# Save analysis results
+analysis_summary = {
+    'total_papers': total_papers,
+    'accuracy': accuracy,
+    'kappa': kappa,
+    'disagreements': len(disagreements),
+    'timestamp': pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
+}
+pd.DataFrame([analysis_summary]).to_csv(
+    'Analysis_results/interim_analysis_metrics.csv', index=False
+)
+
+# Print summary statistics in a cleaner format
+print("\n### Analysis Summary")
+print(f"- Total papers analyzed: {total_papers}")
+print(f"- Number of agreements: {agreements}")
+print(f"- Number of disagreements: {len(disagreements)}")
+print(f"- Accuracy: {accuracy:.2%}")
+print(f"- Cohen's Kappa: {kappa:.2f}")
+
+```
